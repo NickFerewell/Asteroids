@@ -5,6 +5,7 @@ function Ship() {
   this.rotation = 0;
   this.vel = createVector(0, 0)
   this.isBoosting = false;
+  this.isDismiss = false;
 
   this.boosting = function(b) {
     this.isBoosting = b;

@@ -2,6 +2,8 @@ var ship;
 var asteroids = [];
 var lasers = [];
 var score = 0;
+var health = 3;
+const MAX_HEALTH = 3;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -10,7 +12,7 @@ function setup() {
   asteroids.push(new Asteroid());
   }
   pixelDensity(1);
-  noCursor();
+  // noCursor();
 }
 
 function draw() {
@@ -18,6 +20,13 @@ function draw() {
   
   for (var i = 0; i < asteroids.length; i++) {
     if (ship.hits(asteroids[i])){
+      health--;
+      if(health > 0){
+        ship = new Ship();
+      }else {
+        ship.isDismiss = true;
+      }
+      
       console.log("Ooops!")
     }
     asteroids[i].render();
@@ -38,7 +47,7 @@ function draw() {
           asteroids = asteroids.concat(newAsteroids);
         }else{
           //increase the score
-          // score++;
+          //score++;
         }
         asteroids.splice(j, 1);
         lasers.splice(i, 1);
@@ -51,12 +60,18 @@ function draw() {
 
   console.log(lasers.length);
 
-  ship.render();
-  ship.turn();
-  ship.update();
-  ship.edges();
+  if(ship.isDismiss == false){
+    ship.render();
+    ship.turn();
+    ship.update();
+    ship.edges();
+  }
+ 
   
   if(asteroids.length == 0){
+    gameover();
+  }
+  if(health <= 0){
     gameover();
   }
   
@@ -64,8 +79,23 @@ function draw() {
   textSize(35);
   fill(255);
   textAlign(CENTER, CENTER);
-  text(score, 30, 30); //Score counter
+  text(score, 40, 30); //Score counter
   pop();
+
+  //Health counter
+  push();
+  translate((MAX_HEALTH * 0.5 * ship.r) + (health * -ship.r * 0.5) + 0.5*ship.r + 10, 60);
+  for (i = 0; i < health; i++) {
+    push();
+    translate(ship.r * i, 0);
+    fill(0);
+    stroke(255);
+    scale(0.4);
+    triangle(-ship.r, ship.r, ship.r, ship.r, 0, -ship.r);
+    pop();
+  }
+  pop()
+
 }
 
 function gameover(){
@@ -76,14 +106,9 @@ function gameover(){
   strokeWeight(4);
   textAlign(CENTER, CENTER);
   text("GAME OVER",0 , height/2, width);
-  console.log(width);
   pop();
 }
-  push();
-  textSize(100);
-  fill(255);
-  text(score, 10, 30);
-  pop();
+
 
 function keyReleased() {
   if (keyCode == RIGHT_ARROW) {
@@ -97,7 +122,9 @@ function keyReleased() {
 
 function keyPressed() {
   if(key == " "){
-    lasers.push(new Laser(ship.pos, ship.heading));
+    if(ship.isDismiss == false){
+      lasers.push(new Laser(ship.pos, ship.heading));
+    }
   } else if (keyCode == RIGHT_ARROW) {
     ship.setRotation(0.1);
   } else if (keyCode == LEFT_ARROW) {
