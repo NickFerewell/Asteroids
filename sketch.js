@@ -4,16 +4,24 @@ var lasers = [];
 var score = 0;
 var health = 3;
 const MAX_HEALTH = 3;
+SHOW_BOUNDING = false; //show or hide collision bounding
+const FPS = 60;
+const SHIP_EXPLODE_TIME = 0.3;
+const SHOW_CENTER_CIRCLE = true;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   ship = new Ship();
+  health = MAX_HEALTH;
   for(var i = 0; i < 5; i++){
   asteroids.push(new Asteroid());
   }
   pixelDensity(1);
+  frameRate(FPS);
   // noCursor();
 }
+
+console.log(asteroids);
 
 function draw() {
   background(0);
@@ -22,16 +30,43 @@ function draw() {
     if (ship.hits(asteroids[i])){
       health--;
       if(health > 0){
-        ship = new Ship();
+        
+          ship = new Ship();
+          console.log("NEW SHIP");
+        
+       
+        
       }else {
-        ship.isDismiss = true;
+        // ship.isDismiss = true;
+        // ship.isExploding = true;
       }
       
       console.log("Ooops!")
     }
+    
     asteroids[i].render();
     asteroids[i].update();
     asteroids[i].edges();
+  }
+
+  for (var i = 0; i < asteroids.length; i++) {
+    for( var j = 0; j < asteroids.length; j++){
+      if(asteroids[i].hits(asteroids[j])){
+        if(i != j){
+          // rand = random();
+          // if(rand <0.25){
+            asteroids[i].vel = p5.Vector.random2D();
+            let v = asteroids[i].vel.copy();
+            asteroids[j].vel = v.mult(-1);
+            // } while(пересечение векторов скоростей);
+            console.log("collision");
+          
+        
+        
+        }
+      }
+    }
+    
   }
 
   for (var i = lasers.length - 1; i >= 0; i--) {
@@ -54,24 +89,27 @@ function draw() {
         score++;
         break;
       }
+     
     }
   }
   }
 
-  console.log(lasers.length);
 
-  if(ship.isDismiss == false){
+  // console.log(lasers.length);
+
+  // if(ship.isDismiss == false){
     ship.render();
     ship.turn();
     ship.update();
     ship.edges();
-  }
+  // }
  
   
   if(asteroids.length == 0){
     gameover();
   }
   if(health <= 0){
+    ship.isRender = false;
     gameover();
   }
   
@@ -122,7 +160,7 @@ function keyReleased() {
 
 function keyPressed() {
   if(key == " "){
-    if(ship.isDismiss == false){
+    if(ship.isExploding == false){
       lasers.push(new Laser(ship.pos, ship.heading));
     }
   } else if (keyCode == RIGHT_ARROW) {
@@ -133,9 +171,27 @@ function keyPressed() {
     ship.boosting(true);
   } else if (keyCode ==76){ //asteroid cheat 'L'
     asteroids.length = 0;
-  }
+  } else if (keyCode ==114){ //turn bounding 'F3'
+  SHOW_BOUNDING = !SHOW_BOUNDING;
+  console.log(SHOW_BOUNDING);
+  return false;
+}
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+}
+
+function drawArrow(base, vec, myColor) {
+  push();
+  stroke(myColor);
+  strokeWeight(3);
+  fill(myColor);
+  translate(base.x, base.y);
+  line(0, 0, vec.x, vec.y);
+  rotate(vec.heading());
+  let arrowSize = 7;
+  translate(vec.mag() - arrowSize, 0);
+  triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
+  pop();
 }

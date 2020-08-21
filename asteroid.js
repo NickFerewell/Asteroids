@@ -1,14 +1,18 @@
 function Asteroid(pos, r) {
-  if(pos){
-    this.pos = pos.copy();
-  } else {
-    this.pos = createVector(random(width), random(height));
-  }
   if(r){
     this.r = r * 0.5;
   }else{
     this.r = random(15, 50);
   }
+
+  if(pos){
+    this.pos = pos.copy();
+  } else {
+    do{
+      this.pos = createVector(random(width), random(height));
+    } while(dist(ship.pos.x, ship.pos.y, this.pos.x, this.pos.y) < this.r * 2 + ship.r);
+  }
+  
   this.vel = p5.Vector.random2D();
   
   this.total = floor(random(5, 15));
@@ -37,13 +41,32 @@ function Asteroid(pos, r) {
       vertex(x, y);
     }
     endShape(CLOSE);
+    if(SHOW_BOUNDING){
+      stroke(0, 225, 0);
+      noFill();
+      ellipse(0, 0 , this.r * 2);
+    }
     pop();
+    if(SHOW_BOUNDING){
+      velo = this.vel.copy();
+      drawArrow(this.pos, velo.mult(this.r), 'red');
+      // push();
+      // translate(this.pos.x, this.pos.y);
+      // stroke('red');
+      // strokeWeight(3);
+      // line(0, 0, this.vel.x * this.r, this.vel.y * this.r);
+      // pop();
+    }
   }
+
+  
 
   this.breakup = function(){
     var newA = [];
-    newA[0] = new Asteroid(this.pos, this.r);
-    newA[1] = new Asteroid(this.pos, this.r);
+    var newPosA = this.pos.copy();
+    var newPosA = this.pos.copy();
+    newA[0] = new Asteroid(newPosA.add(-(4 + this.r)), this.r);
+    newA[1] = new Asteroid(newPosA.add(4 + this.r), this.r);
     return newA;
   }
 
@@ -59,5 +82,13 @@ function Asteroid(pos, r) {
       this.pos.y = height + this.r;
     }
   }
-
+  this.hits = function(ast){
+    var d = dist(this.pos.x, this.pos.y, ast.pos.x, ast.pos.y);
+    if(d < this.r + ast.r){
+        return true;
+        console.log("HIT!");
+    } else {
+        return false;
+    }
+}
 }
